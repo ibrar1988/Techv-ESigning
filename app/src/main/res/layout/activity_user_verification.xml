@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        tools:context=".UserVerificationActivity">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:gravity="center"
+            android:layout_marginTop="5dp"
+            android:paddingStart="5dp"
+            android:paddingEnd="5dp"
+            android:text="Tap below thumb images to capture a picture"
+            android:textSize="15sp"
+            android:textColor="#ffffff"
+            android:background="@color/design_default_color_primary_dark"/>
+
+        <ImageView
+            android:id="@+id/img_user_verify"
+            android:layout_width="140dp"
+            android:layout_height="165dp"
+            android:layout_margin="20dp"
+            android:padding="2dp"
+            android:layout_gravity="center"
+            android:src="@drawable/account_circle"
+            android:background="@drawable/bg_user_photo"/>
+
+        <Button
+            android:id="@+id/btn_user_verify"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:textAllCaps="false"
+            android:textSize="15sp"
+            android:text="Verify User"
+            android:background="@color/colorPrimary"
+            android:textColor="#ffffff"/>
+
+    </LinearLayout>
+
+</ScrollView>

@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        tools:context=".MainActivity">
+
+        <android.support.design.widget.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="8dp"
+            android:hint="Enter Your Name">
+
+            <EditText
+                android:id="@+id/et_user_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text" />
+
+        </android.support.design.widget.TextInputLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:gravity="center"
+            android:layout_marginTop="5dp"
+            android:paddingStart="5dp"
+            android:paddingEnd="5dp"
+            android:text="Tap below thumb images to capture six different picture"
+            android:textSize="15sp"
+            android:textColor="#ffffff"
+            android:background="@color/design_default_color_primary_dark"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_margin="10dp"
+            android:layout_marginTop="10dp"
+            android:weightSum="3">
+
+            <ImageView
+                android:id="@+id/imageOne"
+                android:layout_width="120dp"
+                android:layout_height="145dp"
+                android:padding="2dp"
+                android:layout_weight="1"
+                android:src="@drawable/account_circle"
+                android:background="@drawable/bg_user_photo"/>
+
+            <ImageView
+                android:id="@+id/imageTwo"
+                android:layout_width="120dp"
+                android:layout_height="145dp"
+                android:padding="2dp"
+                android:layout_marginStart="10dp"
+                android:layout_weight="1"
+                android:src="@drawable/account_circle"
+                android:background="@drawable/bg_user_photo"/>
+
+            <ImageView
+                android:id="@+id/imageThree"
+                android:layout_width="120dp"
+                android:layout_height="145dp"
+                android:padding="2dp"
+                android:layout_marginStart="10dp"
+                android:layout_weight="1"
+                android:src="@drawable/account_circle"
+                android:background="@drawable/bg_user_photo"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_margin="10dp"
+            android:weightSum="3">
+
+            <ImageView
+                android:id="@+id/imageFour"
+                android:layout_width="120dp"
+                android:layout_height="145dp"
+                android:padding="2dp"
+                android:layout_weight="1"
+                android:src="@drawable/account_circle"
+                android:background="@drawable/bg_user_photo"/>
+
+            <ImageView
+                android:id="@+id/imageFive"
+                android:layout_width="120dp"
+                android:layout_height="145dp"
+                android:padding="2dp"
+                android:layout_marginStart="10dp"
+                android:layout_weight="1"
+                android:src="@drawable/account_circle"
+                android:background="@drawable/bg_user_photo"/>
+
+            <ImageView
+                android:id="@+id/imageSix"
+                android:layout_width="120dp"
+                android:layout_height="145dp"
+                android:layout_marginStart="10dp"
+                android:padding="2dp"
+                android:layout_weight="1"
+                android:src="@drawable/account_circle"
+                android:background="@drawable/bg_user_photo"/>
+
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/btn_register_user"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingStart="5dp"
+            android:paddingEnd="5dp"
+            android:layout_gravity="center"
+            android:textAllCaps="false"
+            android:textSize="15sp"
+            android:text="Register User"
+            android:background="@color/colorPrimary"
+            android:textColor="#ffffff"/>
+
+    </LinearLayout>
+
+</ScrollView>

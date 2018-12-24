@@ -1,7 +1,6 @@
 package com.techv.techvesigning;
 
 import android.Manifest;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
@@ -9,8 +8,12 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.Rect;
+import android.hardware.Camera;
 import android.net.ConnectivityManager;
+import android.net.Uri;
 import android.os.Build;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -25,12 +28,12 @@ import android.view.animation.LinearInterpolator;
 import android.view.animation.RotateAnimation;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.android.volley.AuthFailureError;
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.Response;
@@ -41,15 +44,46 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
-import java.util.Map;
+import java.util.List;
 import java.util.Objects;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+public class MainActivity extends AppCompatActivity /*implements View.OnClickListener*/ {
 
-    int CAMERA_REQUEST = 1;
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        Objects.requireNonNull(getSupportActionBar()).setTitle("E-Signing");
+        setContentView(R.layout.activity_main);
+        findViewById(R.id.tv_user_registration).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, UserRegistrationActivity.class));
+            }
+        });
+
+        findViewById(R.id.tv_user_verification).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, UserVerificationActivity.class));
+            }
+        });
+    }
+
+    /*int CAMERA_REQUEST = 1;
     int MY_CAMERA_PERMISSION_CODE = 2;
+    public static final int MEDIA_TYPE_IMAGE = 3;
+    public static final int MEDIA_TYPE_VIDEO = 4;
+    private Camera mCamera;
+    private CameraPreview mPreview;
+    boolean faceDetectionRunning = false;
     int imagePosition = -1;
     private Context mContext;
     private EditText userName;
@@ -76,6 +110,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btn_athenticate_face = findViewById(R.id.btn_athenticate_face);
         btn_athenticate_face.setOnClickListener(this);
         requestObj = new JSONObject();
+        initializeCamera();
     }
 
     @Override
@@ -117,6 +152,98 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+    private void checkPermission(){
+
+
+    }
+
+    private void initializeCamera(){
+        // Create an instance of Camera
+        mCamera = getCameraInstance();
+
+        // Create our Preview view and set it as the content of our activity.
+        mPreview = new CameraPreview(this, mCamera);
+        FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
+        preview.addView(mPreview);
+        MyFaceDetectionListener fDetectionListener = new MyFaceDetectionListener();
+        mCamera.setFaceDetectionListener(fDetectionListener);
+        mCamera.startFaceDetection();
+        faceDetectionRunning = true;
+        mCamera.setPreviewCallback(previewCallback);
+    }
+
+    private Camera.PictureCallback mPicture = new Camera.PictureCallback() {
+
+        @Override
+        public void onPictureTaken(byte[] data, Camera camera) {
+
+            File pictureFile = getOutputMediaFile(MEDIA_TYPE_IMAGE);
+            if (pictureFile == null){
+                Log.d("MainActivity", "Error creating media file, check storage permissions");
+                return;
+            }
+
+            try {
+                FileOutputStream fos = new FileOutputStream(pictureFile);
+                fos.write(data);
+                fos.close();
+            } catch (FileNotFoundException e) {
+                Log.d("MainActivity", "File not found: " + e.getMessage());
+            } catch (IOException e) {
+                Log.d("MainActivity", "Error accessing file: " + e.getMessage());
+            }
+        }
+    };
+
+    public static Camera getCameraInstance(){
+        Camera c = null;
+        try {
+            c = Camera.open(); // attempt to get a Camera instance
+        }
+        catch (Exception e){
+            // Camera is not available (in use or does not exist)
+        }
+        return c; // returns null if camera is unavailable
+    }
+
+    *//** Create a file Uri for saving an image or video *//*
+    private Uri getOutputMediaFileUri(int type){
+        return Uri.fromFile(getOutputMediaFile(type));
+    }
+
+    *//** Create a File for saving an image or video *//*
+    private File getOutputMediaFile(int type){
+        // To be safe, you should check that the SDCard is mounted
+        // using Environment.getExternalStorageState() before doing this.
+
+        File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "MyCameraApp");
+        // This location works best if you want the created images to be shared
+        // between applications and persist after your app has been uninstalled.
+
+        // Create the storage directory if it does not exist
+        if (! mediaStorageDir.exists()){
+            if (! mediaStorageDir.mkdirs()){
+                Log.d("MyCameraApp", "failed to create directory");
+                return null;
+            }
+        }
+
+        // Create a media file name
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        File mediaFile;
+        if (type == MEDIA_TYPE_IMAGE){
+            mediaFile = new File(mediaStorageDir.getPath() + File.separator +
+                    "IMG_"+ timeStamp + ".jpg");
+        } else if(type == MEDIA_TYPE_VIDEO) {
+            mediaFile = new File(mediaStorageDir.getPath() + File.separator +
+                    "VID_"+ timeStamp + ".mp4");
+        } else {
+            return null;
+        }
+
+        return mediaFile;
+    }
+
     private void captureImage(int postion){
         if(checkCameraHardware()) {
             imagePosition = postion;
@@ -133,6 +260,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             alertMessage("Sorry camera is not installed on this phone");
         }
     }
+
+    Camera.PreviewCallback previewCallback = new Camera.PreviewCallback() {
+        @Override
+        public void onPreviewFrame(byte[] data, Camera camera) {
+
+        }
+    };
 
     private boolean checkCameraHardware(){
         if (mContext.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)){
@@ -166,6 +300,43 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 })
                 .create();
         mDialog.show();
+    }
+
+    public int stopFaceDetection() {
+        if (faceDetectionRunning) {
+            mCamera.stopFaceDetection();
+            faceDetectionRunning = false;
+            return 1;
+        }
+        return 0;
+    }
+
+    private class MyFaceDetectionListener implements Camera.FaceDetectionListener {
+
+        @Override
+        public void onFaceDetection(Camera.Face[] faces, Camera camera) {
+
+            if (faces.length == 0) {
+                Log.i("", "No faces detected");
+            } else if (faces.length > 0) {
+                Log.i("", "Faces Detected = " + String.valueOf(faces.length));
+
+                List<Rect> faceRects = new ArrayList<Rect>();
+
+                for (int i=0; i<faces.length; i++) {
+                    int left = faces[i].rect.left;
+                    int right = faces[i].rect.right;
+                    int top = faces[i].rect.top;
+                    int bottom = faces[i].rect.bottom;
+                    Rect uRect = new Rect(left, top, right, bottom);
+                    faceRects.add(uRect);
+                }
+
+                mCamera.takePicture(null, null, mPicture);
+
+                // add function to draw rects on view/surface/canvas
+            }
+        }
     }
 
     private void doRegister(){
@@ -346,6 +517,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             } else {
                 Toast.makeText(this, "camera permission denied", Toast.LENGTH_LONG).show();
             }
+        }else if(requestCode==3) {
+            if(grantResults[0]==PackageManager.PERMISSION_GRANTED) {
+                init();
+            }
+        } else if(requestCode==4 && grantResults[0]==PackageManager.PERMISSION_GRANTED){
+            mCamera.takePicture(null, null, mPicture);
         }
-    }
+    }*/
 }
