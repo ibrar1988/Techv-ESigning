@@ -31,6 +31,16 @@
         android:textColor="#FFFFFF"
         android:text="User Verification"/>
 
-
+    <TextView
+        android:id="@+id/tv_live_capture"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_main_screen"
+        android:layout_marginTop="20dp"
+        android:padding="10dp"
+        android:gravity="center"
+        android:textSize="30sp"
+        android:textColor="#FFFFFF"
+        android:text="Live Capture"/>
 
 </LinearLayout>

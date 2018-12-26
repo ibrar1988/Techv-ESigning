@@ -187,16 +187,40 @@ public class UserVerificationActivity extends AppCompatActivity implements View.
                         public void onResponse(JSONObject response) {
                             dismissTransaparenDialog();
                             SigningApplication.mInstance.showToast(response.toString(),Toast.LENGTH_LONG);
-                            if (response.has("msg")) {
-                                Common.showAlertMessage(mContext, response.optString("msg"));
+                            String message = "";
+                            try {
+                                if (response.has("Name")) {
+                                    message = "Name :" + response.getString("Name");
+                                    //Common.showAlertMessage(mContext, response.optString("msg"));
+                                }
+
+                                if (response.has("confidence")) {
+                                    message = message+ "\n" + "Confidence : " + response.getString("confidence");
+                                    //Common.showAlertMessage(mContext, response.optString("msg"));
+                                }
+
+                                if (response.has("time_stamp")) {
+                                    message = message+ "\n" + "Time Stamp :" + response.getString("time_stamp");
+                                    //Common.showAlertMessage(mContext, response.optString("msg"));
+                                }
+
+                                if(message.equalsIgnoreCase("")) {
+                                    Common.showAlertMessage(mContext, response.toString());
+                                } else {
+                                    Common.showAlertMessage(mContext, message);
+                                }
+
+                            } catch (JSONException ex) {
+                                ex.printStackTrace();
                             }
                         }
                     }, new Response.ErrorListener() {
 
                 @Override
                 public void onErrorResponse(VolleyError error) {
-                    SigningApplication.mInstance.showToast(error.toString(), Toast.LENGTH_LONG);
                     dismissTransaparenDialog();
+                    SigningApplication.mInstance.showToast(error.toString(), Toast.LENGTH_LONG);
+                    Common.showAlertMessage(mContext, "Sorry user not found with this face in our record.");
                 }
             });
 

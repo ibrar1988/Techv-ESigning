@@ -75,6 +75,13 @@ public class MainActivity extends AppCompatActivity /*implements View.OnClickLis
                 startActivity(new Intent(MainActivity.this, UserVerificationActivity.class));
             }
         });
+
+        findViewById(R.id.tv_live_capture).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, LiveCaptureActivity.class));
+            }
+        });
     }
 
     /*int CAMERA_REQUEST = 1;
