@@ -228,31 +228,36 @@ public class UserRegistrationActivity extends AppCompatActivity implements View.
         }
     }
 
-    private void registerUser(){
-        transparent_pd = new TransparentProgressDialog(mContext,"Uploading...");
-        transparent_pd.show();
-        JsonObjectRequest jsonObjReq = new JsonObjectRequest(Request.Method.POST, Constants.kRegistration_Url, requestObj,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        dismissTransaparenDialog();
-                        SigningApplication.mInstance.showToast(response.toString(),Toast.LENGTH_LONG);
-                        if(response.has("msg")) {
-                            Common.showAlertMessage(mContext, response.optString("msg"));
+    private void registerUser() {
+        try {
+            requestObj.put("name", et_user_name.getText().toString().trim());
+            transparent_pd = new TransparentProgressDialog(mContext, "Uploading...");
+            transparent_pd.show();
+            JsonObjectRequest jsonObjReq = new JsonObjectRequest(Request.Method.POST, Constants.kRegistration_Url, requestObj,
+                    new Response.Listener<JSONObject>() {
+                        @Override
+                        public void onResponse(JSONObject response) {
+                            dismissTransaparenDialog();
+                            SigningApplication.mInstance.showToast(response.toString(), Toast.LENGTH_LONG);
+                            if (response.has("msg")) {
+                                Common.showAlertMessage(mContext, response.optString("msg"));
+                            }
                         }
-                    }
-                }, new Response.ErrorListener() {
+                    }, new Response.ErrorListener() {
 
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                SigningApplication.mInstance.showToast(error.toString(),Toast.LENGTH_LONG);
-                dismissTransaparenDialog();
-            }
-        });
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    SigningApplication.mInstance.showToast(error.toString(), Toast.LENGTH_LONG);
+                    dismissTransaparenDialog();
+                }
+            });
 
-        jsonObjReq.setRetryPolicy(new DefaultRetryPolicy(60000, 5, 1f));
+            jsonObjReq.setRetryPolicy(new DefaultRetryPolicy(60000, 5, 1f));
 
-        SigningApplication.mInstance.addToRequestQueue(jsonObjReq, Constants.kRegistration_Url);
+            SigningApplication.mInstance.addToRequestQueue(jsonObjReq, Constants.kRegistration_Url);
+        } catch (JSONException ex){
+            ex.printStackTrace();
+        }
     }
 
     @Override
