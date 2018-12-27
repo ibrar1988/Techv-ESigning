@@ -38,8 +38,10 @@
         <activity
             android:name=".UserRegistrationActivity"
             android:screenOrientation="portrait" />
-        <activity android:name=".LiveCaptureActivity"
-            android:screenOrientation="portrait"/>
+        <activity
+            android:name=".LiveCaptureActivity"
+            android:screenOrientation="portrait" />
+        <activity android:name=".PreviewDemoActivity"></activity>
     </application>
 
 </manifest>

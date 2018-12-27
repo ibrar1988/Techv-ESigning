@@ -1,14 +1,29 @@
 package com.techv.techvesigning;
 
+import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.Rect;
+import android.graphics.RectF;
+import android.graphics.drawable.Drawable;
 import android.hardware.Camera;
+import android.media.Image;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Environment;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Surface;
+import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
+import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -22,31 +37,58 @@ import java.util.List;
 import static android.provider.MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE;
 import static android.provider.MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO;
 
-public class LiveCaptureActivity extends AppCompatActivity {
+public class LiveCaptureActivity extends AppCompatActivity implements View.OnClickListener {
 
+    int CAMERA_PERMISSION_CODE = 1;
     private Context mContext;
     private Camera mCamera;
     private CameraPreview mPreview;
+    private ImageButton btn_switch_camera;
+    private int mCurrentCameraId;
+    private FrameLayout mPreviewLayout;
+    private Paint myRectPaint;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_live_capture);
         this.mContext = this;
+        btn_switch_camera = (ImageButton)findViewById(R.id.btn_switch_camera);
+        btn_switch_camera.setOnClickListener(this);
+        mCurrentCameraId = Camera.CameraInfo.CAMERA_FACING_BACK;
+        myRectPaint = new Paint();
+        myRectPaint.setStrokeWidth(5);
+        myRectPaint.setColor(Color.RED);
+        myRectPaint.setStyle(Paint.Style.STROKE);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        initializeCamera();
+        if(checkCameraHardware()) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && checkSelfPermission(android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{Manifest.permission.CAMERA}, CAMERA_PERMISSION_CODE);
+            } else {
+                initializeCamera();
+            }
+        } else {
+            Common.showAlertMessage(mContext,"Sorry camera is not installed on this phone", "");
+        }
     }
 
     @Override
-    protected void onStop() {
-        super.onStop();
+    protected void onPause() {
+        super.onPause();
         if(mCamera!=null) {
             mCamera.stopFaceDetection();
             mCamera.stopPreview();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if(mCamera!=null) {
             mCamera.release();
             mCamera = null;
         }
@@ -57,28 +99,103 @@ public class LiveCaptureActivity extends AppCompatActivity {
         finish();
     }
 
-    private void initializeCamera(){
-        // Create an instance of Camera
-        mCamera = getCameraInstance();
-        // Create our Preview view and set it as the content of our activity.
-        mPreview = new CameraPreview(mContext, mCamera);
-        FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
-        preview.addView(mPreview);
-        MyFaceDetectionListener fDetectionListener = new MyFaceDetectionListener();
-        mCamera.setFaceDetectionListener(fDetectionListener);
-        mCamera.startFaceDetection();
-        mCamera.setPreviewCallback(mPreviewCallback);
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.btn_switch_camera:
+                switchCamera();
+                break;
+            default:
+                break;
+        }
     }
 
-    public static Camera getCameraInstance(){
+    private boolean checkCameraHardware(){
+        if (getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)){
+            // this device has a camera
+            return true;
+        } else {
+            // no camera on this device
+            return false;
+        }
+    }
+
+    private void initializeCamera(){
+        // Create an instance of Camera
+        mCamera = getCameraInstance(mCurrentCameraId);
+        if(mCamera!=null) {
+            //setCameraDisplayOrientation();
+            // Create our Preview view and set it as the content of our activity.
+            mPreview = new CameraPreview(mContext, mCamera);
+            mPreviewLayout = (FrameLayout) findViewById(R.id.camera_preview);
+            mPreviewLayout.addView(mPreview);
+            MyFaceDetectionListener fDetectionListener = new MyFaceDetectionListener();
+            mCamera.setFaceDetectionListener(fDetectionListener);
+            mCamera.startFaceDetection();
+            mCamera.setPreviewCallback(mPreviewCallback);
+        } else {
+            Common.showAlertMessage(mContext, "Sorry unable to open camera.", "finish");
+        }
+    }
+
+    public Camera getCameraInstance(int cameraId){
         Camera c = null;
         try {
-            c = Camera.open(); // attempt to get a Camera instance
+            c = Camera.open(cameraId); // attempt to get a Camera instance
         }
         catch (Exception e){
             // Camera is not available (in use or does not exist)
         }
         return c; // returns null if camera is unavailable
+    }
+
+    private void switchCamera() {
+        if(mCamera!=null) {
+            mPreview.surfaceDestroyed(mPreview.getHolder());
+            mPreview.getHolder().removeCallback(mPreview);
+            mPreview.destroyDrawingCache();
+            mPreviewLayout.removeView(mPreview);
+            mPreviewLayout.invalidate();
+            mCamera.stopFaceDetection();
+            mCamera.stopPreview();
+            mCamera.setPreviewCallback(null);
+            try {
+                mCamera.setPreviewDisplay(null);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            mCamera.release();
+            if(mCurrentCameraId==Camera.CameraInfo.CAMERA_FACING_BACK) {
+                mCurrentCameraId = Camera.CameraInfo.CAMERA_FACING_FRONT;
+            } else {
+                mCurrentCameraId = Camera.CameraInfo.CAMERA_FACING_BACK;
+            }
+            initializeCamera();
+            //mCamera.startPreview();
+        }
+    }
+
+    public void setCameraDisplayOrientation() {
+        Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
+        int rotation = getWindowManager().getDefaultDisplay().getRotation();
+        int degrees = 0;
+        switch (rotation) {
+            case Surface.ROTATION_0: degrees = 0; break;
+            case Surface.ROTATION_90: degrees = 90; break;
+            case Surface.ROTATION_180: degrees = 180; break;
+            case Surface.ROTATION_270: degrees = 270; break;
+        }
+
+        int result;
+        if (cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+            result = (cameraInfo.orientation + degrees) % 360;
+            result = (360 - result) % 360;  // compensate the mirror
+        } else {  // back-facing
+            result = (cameraInfo.orientation - degrees + 360) % 360;
+        }
+        if(mCamera!=null) {
+            mCamera.setDisplayOrientation(result);
+        }
     }
 
     private class MyFaceDetectionListener implements Camera.FaceDetectionListener {
@@ -91,15 +208,17 @@ public class LiveCaptureActivity extends AppCompatActivity {
             } else if (faces.length > 0) {
                 Log.i("", "Faces Detected = " + String.valueOf(faces.length));
 
-                List<Rect> faceRects = new ArrayList<Rect>();
+                List<RectF> faceRects = new ArrayList<RectF>();
 
-                for (int i=0; i<faces.length; i++) {
-                    int left = faces[i].rect.left;
-                    int right = faces[i].rect.right;
-                    int top = faces[i].rect.top;
-                    int bottom = faces[i].rect.bottom;
-                    Rect uRect = new Rect(left, top, right, bottom);
-                    faceRects.add(uRect);
+                for (Camera.Face face : faces) {
+                    int left = face.rect.left;
+                    int right = face.rect.right;
+                    int top = face.rect.top;
+                    int bottom = face.rect.bottom;
+                    RectF uRect = new RectF(left, top, right, bottom);
+                    //faceRects.add(uRect);
+                    Canvas tempCanvas = new Canvas();
+                    tempCanvas.drawRect(uRect, myRectPaint);
                 }
 
                 //mCamera.takePicture(null, null, mPicture);
@@ -175,5 +294,18 @@ public class LiveCaptureActivity extends AppCompatActivity {
         }
 
         return mediaFile;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == CAMERA_PERMISSION_CODE) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(this, "camera permission granted", Toast.LENGTH_LONG).show();
+                initializeCamera();
+            } else {
+                Toast.makeText(this, "camera permission denied", Toast.LENGTH_LONG).show();
+            }
+        }
     }
 }

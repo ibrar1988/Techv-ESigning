@@ -1,5 +1,6 @@
 package com.techv.techvesigning;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -12,7 +13,7 @@ public class Common {
 
     private static AlertDialog mDialog;
 
-    public static void showAlertMessage(Context mContext, String message){
+    public static void showAlertMessage(final Context mContext, String message, final String actionType){
         if(mDialog!=null && mDialog.isShowing()) {
             mDialog.dismiss();
             mDialog = null;
@@ -25,6 +26,9 @@ public class Common {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         dialog.dismiss();
+                        if(actionType.equalsIgnoreCase("finish")) {
+                            ((Activity)mContext).finish();
+                        }
                     }
                 })
                 .create();

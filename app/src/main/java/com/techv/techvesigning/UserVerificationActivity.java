@@ -1,7 +1,6 @@
 package com.techv.techvesigning;
 
 import android.Manifest;
-import android.app.ActionBar;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
@@ -177,7 +176,7 @@ public class UserVerificationActivity extends AppCompatActivity implements View.
 
     private void VerifyUser(){
         if(requestObj==null || requestObj.length()==0) {
-            Common.showAlertMessage(mContext,"Please capture your face picture");
+            Common.showAlertMessage(mContext,"Please capture your face picture","");
         } else {
             transparent_pd = new TransparentProgressDialog(mContext, "Uploading...");
             transparent_pd.show();
@@ -205,9 +204,9 @@ public class UserVerificationActivity extends AppCompatActivity implements View.
                                 }
 
                                 if(message.equalsIgnoreCase("")) {
-                                    Common.showAlertMessage(mContext, response.toString());
+                                    Common.showAlertMessage(mContext, response.toString(), "");
                                 } else {
-                                    Common.showAlertMessage(mContext, message);
+                                    Common.showAlertMessage(mContext, message, "");
                                 }
 
                             } catch (JSONException ex) {
@@ -220,7 +219,7 @@ public class UserVerificationActivity extends AppCompatActivity implements View.
                 public void onErrorResponse(VolleyError error) {
                     dismissTransaparenDialog();
                     SigningApplication.mInstance.showToast(error.toString(), Toast.LENGTH_LONG);
-                    Common.showAlertMessage(mContext, "Sorry user not found with this face in our record.");
+                    Common.showAlertMessage(mContext, "Sorry user not found with this face in our record.", "");
                 }
             });
 
@@ -248,7 +247,7 @@ public class UserVerificationActivity extends AppCompatActivity implements View.
             Bitmap myBitmap = (Bitmap) Objects.requireNonNull(data.getExtras()).get("data");
             if(myBitmap!=null) {
                 if (!faceDetector.isOperational()) {
-                    Common.showAlertMessage(mContext, "Could not set up the face detector!");
+                    Common.showAlertMessage(mContext, "Could not set up the face detector!", "");
                 } else {
                     Frame frame = new Frame.Builder().setBitmap(myBitmap).build();
                     SparseArray<Face> faces = faceDetector.detect(frame);
@@ -267,7 +266,7 @@ public class UserVerificationActivity extends AppCompatActivity implements View.
                             e.printStackTrace();
                         }
                     } else {
-                        Common.showAlertMessage(mContext, "Sorry Could not detect any face");
+                        Common.showAlertMessage(mContext, "Sorry Could not detect any face", "");
                     }
                 }
             }

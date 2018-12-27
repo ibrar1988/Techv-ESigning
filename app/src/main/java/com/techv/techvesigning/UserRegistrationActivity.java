@@ -18,7 +18,6 @@ import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
 import android.view.animation.RotateAnimation;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -117,7 +116,7 @@ public class UserRegistrationActivity extends AppCompatActivity implements View.
                 startCamera();
             }
         } else {
-            Common.showAlertMessage(mContext,"Sorry camera is not installed on this phone");
+            Common.showAlertMessage(mContext,"Sorry camera is not installed on this phone", "");
         }
     }
 
@@ -138,9 +137,9 @@ public class UserRegistrationActivity extends AppCompatActivity implements View.
 
     private void doRegister(){
         if(et_user_name.getText().toString().trim().isEmpty()){
-            Common.showAlertMessage(mContext,"Please enter user name");
+            Common.showAlertMessage(mContext,"Please enter user name", "");
         } else if(requestObj.length()<6) {
-            Common.showAlertMessage(mContext,"Please capture all six images");
+            Common.showAlertMessage(mContext,"Please capture all six images", "");
         } else {
             registerUser();
         }
@@ -240,7 +239,7 @@ public class UserRegistrationActivity extends AppCompatActivity implements View.
                             dismissTransaparenDialog();
                             SigningApplication.mInstance.showToast(response.toString(), Toast.LENGTH_LONG);
                             if (response.has("msg")) {
-                                Common.showAlertMessage(mContext, response.optString("msg"));
+                                Common.showAlertMessage(mContext, response.optString("msg"), "");
                             }
                         }
                     }, new Response.ErrorListener() {
@@ -267,14 +266,14 @@ public class UserRegistrationActivity extends AppCompatActivity implements View.
             Bitmap myBitmap = (Bitmap) Objects.requireNonNull(data.getExtras()).get("data");
             if(myBitmap!=null) {
                 if (!faceDetector.isOperational()) {
-                    Common.showAlertMessage(mContext, "Could not set up the face detector!");
+                    Common.showAlertMessage(mContext, "Could not set up the face detector!", "");
                 } else {
                     Frame frame = new Frame.Builder().setBitmap(myBitmap).build();
                     SparseArray<Face> faces = faceDetector.detect(frame);
                     if(faces.size()>0) {
                         updateImage(myBitmap, imagePosition);
                     } else {
-                        Common.showAlertMessage(mContext, "Sorry Could not detect any face");
+                        Common.showAlertMessage(mContext, "Sorry Could not detect any face", "");
                     }
                 }
             }
