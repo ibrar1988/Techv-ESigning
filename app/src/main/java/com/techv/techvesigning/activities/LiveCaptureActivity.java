@@ -1,17 +1,13 @@
-package com.techv.techvesigning;
+package com.techv.techvesigning.activities;
 
 import android.Manifest;
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Rect;
 import android.graphics.RectF;
-import android.graphics.drawable.Drawable;
 import android.hardware.Camera;
-import android.media.Image;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
@@ -24,6 +20,10 @@ import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.Toast;
+
+import com.techv.techvesigning.CameraPreview;
+import com.techv.techvesigning.R;
+import com.techv.techvesigning.extra.Common;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -242,7 +242,7 @@ public class LiveCaptureActivity extends AppCompatActivity implements View.OnCli
 
             File pictureFile = getOutputMediaFile(MEDIA_TYPE_IMAGE);
             if (pictureFile == null){
-                Log.d("MainActivity", "Error creating media file, check storage permissions");
+                Log.d("MainActivityPrime", "Error creating media file, check storage permissions");
                 return;
             }
 
@@ -251,9 +251,9 @@ public class LiveCaptureActivity extends AppCompatActivity implements View.OnCli
                 fos.write(data);
                 fos.close();
             } catch (FileNotFoundException e) {
-                Log.d("MainActivity", "File not found: " + e.getMessage());
+                Log.d("MainActivityPrime", "File not found: " + e.getMessage());
             } catch (IOException e) {
-                Log.d("MainActivity", "Error accessing file: " + e.getMessage());
+                Log.d("MainActivityPrime", "Error accessing file: " + e.getMessage());
             }
         }
     };

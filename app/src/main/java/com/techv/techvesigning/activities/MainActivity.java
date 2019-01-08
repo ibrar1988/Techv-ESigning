@@ -1,9 +1,14 @@
-package com.techv.techvesigning;
+package com.techv.techvesigning.activities;
 
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+
+import com.techv.techvesigning.R;
+import com.techv.techvesigning.activities.faceDetection.UserRegistrationActivity;
+import com.techv.techvesigning.activities.faceDetection.UserVerificationActivity;
+
 import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity /*implements View.OnClickListener*/ {
@@ -137,7 +142,7 @@ public class MainActivity extends AppCompatActivity /*implements View.OnClickLis
 
             File pictureFile = getOutputMediaFile(MEDIA_TYPE_IMAGE);
             if (pictureFile == null){
-                Log.d("MainActivity", "Error creating media file, check storage permissions");
+                Log.d("MainActivityPrime", "Error creating media file, check storage permissions");
                 return;
             }
 
@@ -146,9 +151,9 @@ public class MainActivity extends AppCompatActivity /*implements View.OnClickLis
                 fos.write(data);
                 fos.close();
             } catch (FileNotFoundException e) {
-                Log.d("MainActivity", "File not found: " + e.getMessage());
+                Log.d("MainActivityPrime", "File not found: " + e.getMessage());
             } catch (IOException e) {
-                Log.d("MainActivity", "Error accessing file: " + e.getMessage());
+                Log.d("MainActivityPrime", "Error accessing file: " + e.getMessage());
             }
         }
     };

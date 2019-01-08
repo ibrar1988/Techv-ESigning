@@ -1,4 +1,4 @@
-package com.techv.techvesigning;
+package com.techv.techvesigning.activities;
 
 import android.Manifest;
 import android.content.Context;
@@ -6,8 +6,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.PixelFormat;
-import android.graphics.PorterDuff;
+import android.graphics.Rect;
 import android.graphics.RectF;
 import android.hardware.Camera;
 import android.os.Build;
@@ -15,11 +14,11 @@ import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.view.View;
 import android.widget.Toast;
+
+import com.techv.techvesigning.R;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -30,9 +29,7 @@ public class PreviewDemoActivity extends AppCompatActivity {
     int CAMERA_PERMISSION_CODE = 1;
     Context mContext;
     private SurfaceView preview=null;
-    private SurfaceView transparentView=null;
     private SurfaceHolder previewHolder=null;
-    private SurfaceHolder holderTransparent=null;
     private Camera camera=null;
     private boolean inPreview=false;
     private boolean cameraConfigured=false;
@@ -43,13 +40,7 @@ public class PreviewDemoActivity extends AppCompatActivity {
         setContentView(R.layout.activity_preview_demo);
         mContext = this;
         preview=(SurfaceView)findViewById(R.id.preview);
-        preview.setOnTouchListener(onTouchListner);
-        transparentView=(SurfaceView)findViewById(R.id.TransparentView);
-        holderTransparent = transparentView.getHolder();
-        holderTransparent.setFormat(PixelFormat.TRANSPARENT);
-        //holderTransparent.addCallback(surfaceCallback);
-        holderTransparent.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
-        previewHolder=preview.getHolder();
+        previewHolder = preview.getHolder();
         previewHolder.addCallback(surfaceCallback);
         previewHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
         myRectPaint = new Paint();
@@ -137,8 +128,7 @@ public class PreviewDemoActivity extends AppCompatActivity {
 
             if (!cameraConfigured) {
                 Camera.Parameters parameters=camera.getParameters();
-                Camera.Size size=getBestPreviewSize(width, height,
-                        parameters);
+                Camera.Size size = getBestPreviewSize(width, height, parameters);
 
                 if (size!=null) {
                     parameters.setPreviewSize(size.width, size.height);
@@ -160,16 +150,18 @@ public class PreviewDemoActivity extends AppCompatActivity {
         }
     }
 
+    SurfaceHolder hh;
+
     SurfaceHolder.Callback surfaceCallback=new SurfaceHolder.Callback() {
         public void surfaceCreated(SurfaceHolder holder) {
             // no-op -- wait until surfaceChanged()
+            hh = holder;
         }
 
-        public void surfaceChanged(SurfaceHolder holder,
-                                   int format, int width,
-                                   int height) {
+        public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
             initPreview(width, height);
             startPreview();
+            hh = holder;
         }
 
         public void surfaceDestroyed(SurfaceHolder holder) {
@@ -196,12 +188,12 @@ public class PreviewDemoActivity extends AppCompatActivity {
                     int right = face.rect.right;
                     int top = face.rect.top;
                     int bottom = face.rect.bottom;
+                    Rect rect = new Rect(left, top, right, bottom);
                     RectF uRect = new RectF(left, top, right, bottom);
-                    //faceRects.add(uRect);
-                    Canvas tempCanvas = previewHolder.lockCanvas();// new Canvas();
+                    Canvas tempCanvas = hh.lockCanvas(rect);
                     if(tempCanvas!=null) {
                         tempCanvas.drawRect(uRect, myRectPaint);
-                        previewHolder.unlockCanvasAndPost(tempCanvas);
+                        hh.unlockCanvasAndPost(tempCanvas);
                     }
                 }
 
@@ -216,35 +208,6 @@ public class PreviewDemoActivity extends AppCompatActivity {
         @Override
         public void onPreviewFrame(byte[] data, Camera camera) {
 
-        }
-    };
-
-    private void DrawFocusRect(float RectLeft, float RectTop, float RectRight, float RectBottom, int color)
-    {
-
-        Canvas canvas = holderTransparent.lockCanvas();
-        canvas.drawColor(0,PorterDuff.Mode.CLEAR);
-        //border's properties
-        myRectPaint = new Paint();
-        myRectPaint.setStyle(Paint.Style.STROKE);
-        myRectPaint.setColor(color);
-        myRectPaint.setStrokeWidth(3);
-        canvas.drawRect(RectLeft, RectTop, RectRight, RectBottom, myRectPaint);
-
-
-        holderTransparent.unlockCanvasAndPost(canvas);
-    }
-
-    View.OnTouchListener onTouchListner = new View.OnTouchListener() {
-
-        @Override
-        public boolean onTouch(View v, MotionEvent event) {
-            float RectLeft = event.getX() - 100;
-            float RectTop = event.getY() - 100 ;
-            float RectRight = event.getX() + 100;
-            float RectBottom = event.getY() + 100;
-            DrawFocusRect(RectLeft , RectTop , RectRight , RectBottom , Color.BLUE);
-            return false;
         }
     };
 

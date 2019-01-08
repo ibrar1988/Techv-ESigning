@@ -1,4 +1,4 @@
-package com.techv.techvesigning;
+package com.techv.techvesigning.constant;
 
 public class Constants {
 

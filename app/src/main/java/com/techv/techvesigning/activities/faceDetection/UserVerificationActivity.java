@@ -1,4 +1,4 @@
-package com.techv.techvesigning;
+package com.techv.techvesigning.activities.faceDetection;
 
 import android.Manifest;
 import android.app.Dialog;
@@ -12,13 +12,16 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Base64;
 import android.util.DisplayMetrics;
 import android.util.SparseArray;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
 import android.view.animation.RotateAnimation;
-import android.widget.EditText;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -32,38 +35,36 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.google.android.gms.vision.Frame;
 import com.google.android.gms.vision.face.Face;
 import com.google.android.gms.vision.face.FaceDetector;
+import com.techv.techvesigning.extra.Common;
+import com.techv.techvesigning.R;
+import com.techv.techvesigning.SigningApplication;
+import com.techv.techvesigning.constant.Constants;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
+import java.util.Iterator;
 import java.util.Objects;
 
-public class UserRegistrationActivity extends AppCompatActivity implements View.OnClickListener {
+public class UserVerificationActivity extends AppCompatActivity implements View.OnClickListener {
 
     int CAMERA_PERMISSION_CODE = 1;
     int CAMERA_REQUEST = 2;
     private Context mContext;
-    private EditText et_user_name;
+    private ImageView img_user_verify;
+    Button btn_user_verify;
     private TransparentProgressDialog transparent_pd;
-    int imagePosition = -1;
     private JSONObject requestObj;
     private FaceDetector faceDetector;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_registration);
-        mContext = this;
-        et_user_name = findViewById(R.id.et_user_name);
-        findViewById(R.id.btn_register_user).setOnClickListener(this);
-        findViewById(R.id.imageOne).setOnClickListener(this);
-        findViewById(R.id.imageTwo).setOnClickListener(this);
-        findViewById(R.id.imageThree).setOnClickListener(this);
-        findViewById(R.id.imageFour).setOnClickListener(this);
-        findViewById(R.id.imageFive).setOnClickListener(this);
-        findViewById(R.id.imageSix).setOnClickListener(this);
-        faceDetector = new FaceDetector.Builder(getApplicationContext()).setTrackingEnabled(false).build();
-        requestObj = new JSONObject();
+        setContentView(R.layout.activity_user_verification);
+        this.mContext = this;
+        init();
     }
 
     @Override
@@ -80,102 +81,52 @@ public class UserRegistrationActivity extends AppCompatActivity implements View.
         super.onDestroy();
     }
 
+    private void init(){
+        faceDetector = new FaceDetector.Builder(getApplicationContext()).setTrackingEnabled(false).build();
+        img_user_verify = findViewById(R.id.img_user_verify);
+        img_user_verify.setOnClickListener(this);
+        btn_user_verify = findViewById(R.id.btn_user_verify);
+        btn_user_verify.setOnClickListener(this);
+    }
+
     @Override
     public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.imageOne:
-                captureImage(1);
+        switch (v.getId()){
+            case R.id.img_user_verify:
+                captureImage();
                 break;
-            case R.id.imageTwo:
-                captureImage(2);
-                break;
-            case R.id.imageThree:
-                captureImage(3);
-                break;
-            case R.id.imageFour:
-                captureImage(4);
-                break;
-            case R.id.imageFive:
-                captureImage(5);
-                break;
-            case R.id.imageSix:
-                captureImage(6);
-                break;
-            case R.id.btn_register_user:
-                doRegister();
+            case R.id.btn_user_verify:
+                VerifyUser();
                 break;
         }
     }
 
-    private void captureImage(int postion){
-        if(checkCameraHardware()) {
-            imagePosition = postion;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && checkSelfPermission(android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-                requestPermissions(new String[]{Manifest.permission.CAMERA}, CAMERA_PERMISSION_CODE);
-            } else {
-                startCamera();
-            }
+    private void captureImage(){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && checkSelfPermission(android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{Manifest.permission.CAMERA}, CAMERA_PERMISSION_CODE);
         } else {
-            Common.showAlertMessage(mContext,"Sorry camera is not installed on this phone", "");
+            startCamera();
         }
     }
 
-    private void startCamera(){
+    private void startCamera() {
         Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         startActivityForResult(cameraIntent, CAMERA_REQUEST);
     }
 
-    private boolean checkCameraHardware(){
-        if (getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)){
-            // this device has a camera
-            return true;
-        } else {
-            // no camera on this device
-            return false;
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                finish();
+                return true;
         }
+
+        return super.onOptionsItemSelected(item);
     }
 
-    private void doRegister(){
-        if(et_user_name.getText().toString().trim().isEmpty()){
-            Common.showAlertMessage(mContext,"Please enter user name", "");
-        } else if(requestObj.length()<6) {
-            Common.showAlertMessage(mContext,"Please capture all six images", "");
-        } else {
-            registerUser();
-        }
-    }
-
-    private void updateImage(Bitmap btImage, int position){
-        try {
-            switch (position) {
-                case 1:
-                    ((ImageView)findViewById(R.id.imageOne)).setImageBitmap(btImage);
-                    requestObj.put("image_0", Common.encodeImageBase64(btImage));
-                    break;
-                case 2:
-                    ((ImageView)findViewById(R.id.imageTwo)).setImageBitmap(btImage);
-                    requestObj.put("image_1", Common.encodeImageBase64(btImage));
-                    break;
-                case 3:
-                    ((ImageView)findViewById(R.id.imageThree)).setImageBitmap(btImage);
-                    requestObj.put("image_2", Common.encodeImageBase64(btImage));
-                    break;
-                case 4:
-                    ((ImageView)findViewById(R.id.imageFour)).setImageBitmap(btImage);
-                    requestObj.put("image_3", Common.encodeImageBase64(btImage));
-                    break;
-                case 5:
-                    ((ImageView)findViewById(R.id.imageFive)).setImageBitmap(btImage);
-                    requestObj.put("image_4", Common.encodeImageBase64(btImage));
-                    break;
-                case 6:
-                    ((ImageView)findViewById(R.id.imageSix)).setImageBitmap(btImage);
-                    requestObj.put("image_5", Common.encodeImageBase64(btImage));
-                    break;
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+    public boolean onCreateOptionsMenu(Menu menu) {
+        return true;
     }
 
     private class TransparentProgressDialog extends Dialog {
@@ -227,35 +178,69 @@ public class UserRegistrationActivity extends AppCompatActivity implements View.
         }
     }
 
-    private void registerUser() {
-        try {
-            requestObj.put("name", et_user_name.getText().toString().trim());
+    private void VerifyUser(){
+        if(requestObj==null || requestObj.length()==0) {
+            Common.showAlertMessage(mContext,"Please capture your face picture","");
+        } else {
             transparent_pd = new TransparentProgressDialog(mContext, "Uploading...");
             transparent_pd.show();
-            JsonObjectRequest jsonObjReq = new JsonObjectRequest(Request.Method.POST, Constants.kRegistration_Url, requestObj,
+            JsonObjectRequest jsonObjReq = new JsonObjectRequest(Request.Method.POST, Constants.kFaceVerification_Url, requestObj,
                     new Response.Listener<JSONObject>() {
                         @Override
                         public void onResponse(JSONObject response) {
                             dismissTransaparenDialog();
-                            SigningApplication.mInstance.showToast(response.toString(), Toast.LENGTH_LONG);
-                            if (response.has("msg")) {
-                                Common.showAlertMessage(mContext, response.optString("msg"), "");
+                            SigningApplication.mInstance.showToast(response.toString(),Toast.LENGTH_LONG);
+                            String message = "";
+                            try {
+                                if (response.has("Name")) {
+                                    message = "Name :" + response.getString("Name");
+                                    //Common.showAlertMessage(mContext, response.optString("msg"));
+                                }
+
+                                if (response.has("confidence")) {
+                                    message = message+ "\n" + "Confidence : " + response.getString("confidence");
+                                    //Common.showAlertMessage(mContext, response.optString("msg"));
+                                }
+
+                                if (response.has("time_stamp")) {
+                                    message = message+ "\n" + "Time Stamp :" + response.getString("time_stamp");
+                                    //Common.showAlertMessage(mContext, response.optString("msg"));
+                                }
+
+                                if(message.equalsIgnoreCase("")) {
+                                    Common.showAlertMessage(mContext, response.toString(), "");
+                                } else {
+                                    Common.showAlertMessage(mContext, message, "");
+                                }
+
+                            } catch (JSONException ex) {
+                                ex.printStackTrace();
                             }
                         }
                     }, new Response.ErrorListener() {
 
                 @Override
                 public void onErrorResponse(VolleyError error) {
-                    SigningApplication.mInstance.showToast(error.toString(), Toast.LENGTH_LONG);
                     dismissTransaparenDialog();
+                    SigningApplication.mInstance.showToast(error.toString(), Toast.LENGTH_LONG);
+                    Common.showAlertMessage(mContext, "Sorry user not found with this face in our record.", "");
                 }
             });
 
             jsonObjReq.setRetryPolicy(new DefaultRetryPolicy(60000, 5, 1f));
 
             SigningApplication.mInstance.addToRequestQueue(jsonObjReq, Constants.kRegistration_Url);
-        } catch (JSONException ex){
-            ex.printStackTrace();
+        }
+    }
+
+    private String encodeImageBase64(Bitmap bm) {
+        if(bm!=null) {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            bm.compress(Bitmap.CompressFormat.PNG, 100, baos);
+            byte[] byteText = baos.toByteArray();
+            return Base64.encodeToString(byteText, Base64.DEFAULT);
+        } else {
+            return "";
         }
     }
 
@@ -271,7 +256,19 @@ public class UserRegistrationActivity extends AppCompatActivity implements View.
                     Frame frame = new Frame.Builder().setBitmap(myBitmap).build();
                     SparseArray<Face> faces = faceDetector.detect(frame);
                     if(faces.size()>0) {
-                        updateImage(myBitmap, imagePosition);
+                        img_user_verify.setImageBitmap(myBitmap);
+                        if(requestObj!=null) {
+                            Iterator keys = requestObj.keys();
+                            while(keys.hasNext())
+                                requestObj.remove((String)requestObj.keys().next());
+                        } else {
+                            requestObj = new JSONObject();
+                        }
+                        try {
+                            requestObj.put("img",encodeImageBase64(myBitmap));
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
                     } else {
                         Common.showAlertMessage(mContext, "Sorry Could not detect any face", "");
                     }
@@ -282,13 +279,9 @@ public class UserRegistrationActivity extends AppCompatActivity implements View.
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == CAMERA_PERMISSION_CODE) {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(this, "camera permission granted", Toast.LENGTH_LONG).show();
                 startCamera();
-            } else {
-                Toast.makeText(this, "camera permission denied", Toast.LENGTH_LONG).show();
             }
         }
     }
